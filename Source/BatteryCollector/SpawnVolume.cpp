@@ -13,13 +13,15 @@ ASpawnVolume::ASpawnVolume()
 
 	WhereToSpawn = CreateDefaultSubobject<UBoxComponent>(TEXT("WhereToSpawn"));
 	RootComponent = WhereToSpawn;
+
+	SpawnDelayLow = 1.f;
+	SpawnDelayHigh = 4.5f;
 }
 
 // Called when the game starts or when spawned
 void ASpawnVolume::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame
@@ -32,9 +34,22 @@ void ASpawnVolume::Tick(float DeltaTime)
 FVector ASpawnVolume::GetRandomPointVolume()
 {
 	FVector SpwanOrigin = WhereToSpawn->Bounds.Origin;
-	FVector SpwanExtent = WhereToSpawn->Bounds.Extent;
+	FVector SpwanExtent = WhereToSpawn->Bounds.BoxExtent;
 
 	return UKismetMathLibrary::RandomPointInBoundingBox(SpwanOrigin, SpwanExtent);
+}
+
+void ASpawnVolume::SetSpawningVolume(bool bSpawn)
+{
+	if (bSpawn)
+	{
+		SpawnDelay = FMath::FRandRange(SpawnDelayLow, SpawnDelayHigh);
+		GetWorldTimerManager().SetTimer(SpawnTimer, this, &ASpawnVolume::SpawnPickup, SpawnDelay, false);
+	}
+	else
+	{
+		GetWorldTimerManager().ClearTimer(SpawnTimer);
+	}
 }
 
 void ASpawnVolume::SpawnPickup()
@@ -56,6 +71,9 @@ void ASpawnVolume::SpawnPickup()
 			SpawnRotation.Roll	= FMath::FRand() * 360.f;
 
 			APickup* const SpawnedPickup = World->SpawnActor<APickup>(WhatToSpawn, SpawnLocation, SpawnRotation, SpawnParams);
+
+			SpawnDelay = FMath::FRandRange(SpawnDelayLow, SpawnDelayHigh);
+			GetWorldTimerManager().SetTimer(SpawnTimer, this, &ASpawnVolume::SpawnPickup, SpawnDelay, false);
 		}
 	}
 }

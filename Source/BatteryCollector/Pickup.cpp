@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Pickup.h"
+#include "LogMacros.h"
 
 // Sets default values
 APickup::APickup()
@@ -36,6 +37,11 @@ bool APickup::IsActive()
 void APickup::SetActive(bool isActive)
 {
 	bIsActive = isActive;
+}
 
+void APickup::WasCollected_Implementation()
+{
+	FString PickupDebugString = GetName();
+	UE_LOG(LogClass, Log, TEXT("You Have Collected %s"), *PickupDebugString);
 }
 
